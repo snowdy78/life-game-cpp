@@ -24,6 +24,7 @@ namespace rn
 		using ButtonT::ButtonT;
 		virtual ~ElementWithList() override
 		{
+			delete list;
 			delete get_list_pos;
 		}
 		void setListPos(std::function<Vec2f(void)> *lst_pos_counter)
