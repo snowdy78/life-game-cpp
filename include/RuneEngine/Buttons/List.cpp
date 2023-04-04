@@ -21,7 +21,7 @@ namespace rn
 		size = base->getSize();
 		bounds = Vec2f(base->getSize().x, bound_height);
 		if (base != nullptr)
-			default_position = Base->getPosition();
+			absolute_position = Base->getPosition();
 		shape = Rect(Vec2f{ length, slider_size() });
 		scroll(l);
 	}
@@ -31,15 +31,23 @@ namespace rn
 		shape.setSize(Vec2f{ length, slider_size()});
 	}
 
+	void List::ScrollBar::reTransform()
+	{
+		size = base->getSize();
+		bounds = Vec2f(base->getSize().x, bounds.y);
+		shape.setSize({ shape.getSize().x, slider_size()});
+		scroll(l);
+	}
+
 	void List::ScrollBar::scroll(float k)
 	{
 		k = std::clamp(k, 0.f, 1.f);
 		if (base != nullptr)
 		{
-			shape.setPosition(Vec2f{ 0, k * (bounds.y - getSize().y) });
+			shape.setPosition(getPosition() + Vec2f{ 0, k * (bounds.y - getSize().y) });
 			clampPos();
 			Vec2f F = { 0, k * (size.y - bounds.y) }; // first element position
-			base->setPosition(default_position - F);
+			base->setPosition(absolute_position - F);
 		}
 		l = k;
 	}
@@ -52,7 +60,7 @@ namespace rn
 			move_to(shape, shape.getPosition(), Vec2f{ 0, k * (bounds.y - getSize().y) }, time);
 			clampPos();
 			Vec2f F = { 0, k * (size.y - bounds.y) }; // first element position
-			base->setPosition(default_position - F);
+			base->setPosition(absolute_position - F);
 		}
 		l = k;
 	}
@@ -97,19 +105,54 @@ namespace rn
 		scroll(l);
 	}
 
-	const Vec2f& List::ScrollBar::getScrollPosition() const
+	void List::ScrollBar::setFillColor(const sf::Color &color)
 	{
-		return shape.getPosition();
+		shape.setFillColor(color);
 	}
 
-	sf::FloatRect List::ScrollBar::getScrollGlobalBounds() const
+	void List::ScrollBar::setOutlineColor(const sf::Color &color)
 	{
-		return shape.getGlobalBounds();
+		shape.setOutlineColor(color);
 	}
 
-	sf::FloatRect List::ScrollBar::getScrollLocalBounds() const
+	void List::ScrollBar::setOutlineThickness(const float &thickness)
 	{
-		return shape.getLocalBounds();
+		shape.setOutlineThickness(thickness);
+	}
+
+	sf::Color List::ScrollBar::getFillColor() const
+	{
+		return shape.getFillColor();
+	}
+
+	sf::Color List::ScrollBar::getOutlineColor() const
+	{
+		return shape.getOutlineColor();
+	}
+
+	float List::ScrollBar::getOutlineThickness() const
+	{
+		return shape.getOutlineThickness();
+	}
+
+	void List::ScrollBar::setTexture(const sf::Texture *texture, bool reset_rect)
+	{
+		shape.setTexture(texture, reset_rect);
+	}
+
+	void List::ScrollBar::setTextureRect(const sf::IntRect &rect)
+	{
+		shape.setTextureRect(rect);
+	}
+
+	const sf::Texture *List::ScrollBar::getTexture() const
+	{
+		return shape.getTexture();
+	}
+
+	const sf::IntRect &List::ScrollBar::getTextureRect() const
+	{
+		return shape.getTextureRect();
 	}
 
 	const Vec2f& List::ScrollBar::getSize() const
@@ -144,23 +187,37 @@ namespace rn
 		return {getOrigin(), Vec2f(bounds)};
 	}
 
-	void List::ScrollBar::setTablePosition(const Vec2f& position)
+	void List::ScrollBar::setAbsolute(const Vec2f& position)
 	{
-		default_position = position;
+		absolute_position = position;
 		scroll(l);
 	}
 
-	void List::ScrollBar::setTablePosition(float x, float y)
+	void List::ScrollBar::setAbsolute(float x, float y)
 	{
-		default_position = Vec2f(x, y);
+		absolute_position = Vec2f(x, y);
 		scroll(l);
+	}
+
+	const Vec2f &List::ScrollBar::getAbsolute() const
+	{
+		return absolute_position;
+	}
+
+	const sf::Transform& List::ScrollBar::getTransform() const
+	{
+		return shape.getTransform();
+	}
+
+	const sf::Transform& List::ScrollBar::getInverseTransform() const
+	{
+		return shape.getInverseTransform();
 	}
 
 	void List::ScrollBar::setTable(Table* table)
 	{
 		base = table;
-		size = base->getSize();
-		scroll(l);
+		reTransform();
 	}
 
 	void List::ScrollBar::resize(const Vec2f& Size)
@@ -196,13 +253,13 @@ namespace rn
 
 	List::List(const List &list) : Table(static_cast<const Table &>(list)), scrollbar(list.scrollbar)
 	{
-		scrollbar.setTable(this);
+		scrollbar.reTransform();
 		update_rect_list();
 	}
 
 	List::List(List &&list) noexcept : Table(std::move(static_cast<Table &&>(list))), scrollbar(std::move(list.scrollbar))
 	{
-		scrollbar.setTable(this);
+		scrollbar.reTransform();
 		update_rect_list();
 	}
 
@@ -226,17 +283,51 @@ namespace rn
 		return ConstIterator(this, rect_list.cend());
 	}
 
+	void List::setAbsolute(const Vec2f& position)
+	{
+		scrollbar.setAbsolute(position);
+	}
+	void List::setAbsolute(float x, float y)
+	{
+		scrollbar.setAbsolute(x, y);
+	}
+
+	const Vec2f& List::getAbsolute() const
+	{
+		return scrollbar.getAbsolute();
+	}
+
 	sf::FloatRect List::at(const size_t &x, const size_t &y) const
 	{
 		return this->getCellRect(x, y);
 	}
 
+
+	void List::setCellsSize(const Vec2f &sample)
+	{
+		Table::setCellsSize(sample);
+		scrollbar.reTransform();
+		update_rect_list();
+	}
+
 	void List::resize(const size_t &width, const size_t &height)
 	{
 		Table::resize(width, height);
-		scrollbar.setTable(this);
-		scrollbar.setLength(scrollbar.getSize().x);
-		scrollbar.scroll(scrollbar.coefficient());
+		scrollbar.reTransform();
+		update_rect_list();
+	}
+
+	void List::setColumnWidth(const size_t &x, float width)
+	{
+		Table::setColumnWidth(x, width);
+		scrollbar.reTransform();
+		update_rect_list();
+	}
+
+	void List::setRowHeight(const size_t &y, float height)
+	{
+		Table::setRowHeight(y, height);
+		scrollbar.reTransform();
 		update_rect_list();
 	}
 

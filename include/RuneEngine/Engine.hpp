@@ -45,11 +45,13 @@ namespace rn
 	};
 	class JsonFile;
 	class Settings;
-	// Input Actions
-
+	
 	class Curve; // Bezier Curve
 
-
+	class LinearGradient;
+	class GradientStrip;
+	class TriangularGradient;
+	class RadialGradient;
 
 	struct Clickable;
 	class ClickableObject;
@@ -61,17 +63,21 @@ namespace rn
 	class TextBlock;
 	struct Button;
 	struct random;
-	template<class>
+	template<class T>
 	class clip;
 	template<class Shape>
 	class CountSlider;
 	template<ScrollType type = ScrollType::Vertical>
 	class ScrollBar;
 	class List;
-	//    cards    //
 	class StaticTexture;
 	class MonoBehaviour;
-	/////////////////
+	template<class ButtonType>
+	class Panels;
+	template<class Element>
+	class ElementList;
+	template<class ButtonT, class Element = ButtonT>
+	class ElementWithList;
 	namespace math_operations
 	{
 		template<typename T>
@@ -87,6 +93,7 @@ namespace rn
 	{
 		constexpr float pi = 3.14159265f;
 		constexpr float rad = pi / 180; // radian
+		constexpr float e = 2.71828182f;
 		struct MathDivision : std::exception
 		{
 			MathDivision(const char *message);
@@ -99,6 +106,7 @@ namespace rn
 		};
 		bool contains(const Rect &rect, const Vec2f &point); // if point in rect, then returns true 
 		bool contains(const sf::FloatRect &rect, const Vec2f &point); // ro - left top point of rect
+		bool contains(const sf::VertexArray &convex_polygon, const Vec2f &p);
 		bool contains(const Convex &polygon, const Vec2f &point);
 		bool contains(const Circle &circle, const Vec2f &point);
 		Vec2f nearest(const Vec2f &p, const Vec2f &A, const Vec2f &B); // returns the closest point from point p to line AB
@@ -107,12 +115,15 @@ namespace rn
 		float around(const float &x, int n); // rounds to n'th number after the decimal point
 		float sgn(float x); // returns a sign of number
 		bool belongs(const float &x, const float &m, const float &n);
-		Vec2f norm(const Vec2f &v);
+		Vec2f norm(const Vec2f &v); // normalized vector
+		Vec2f nor(const Vec2f &v); // vector normal' 
 		sf::Color mix(const sf::Color &c1, const sf::Color &c2);
 		float clamp(const float &x, const float &minX, float maxX);
 		Vec2f intersect(const Vec2f &p1, const Vec2f &p2, const Vec2f &p3, const Vec2f &p4);
+		float getAngle(const Vec2f &, const Vec2f &, const Vec2f &);
 		float rot(const Vec2f &);
 	}
+	
 
 	namespace time
 	{
@@ -158,3 +169,9 @@ namespace rn
 #include "Buttons/button.hpp"
 #include "Buttons/CountSlider.hpp"
 #include "Buttons/List.hpp"
+#include "Gradient/LinearGradient.hpp"
+#include "Gradient/TriangularGradient.hpp"
+#include "Gradient/GradientStrip.hpp"
+#include "Panels.hpp"
+#include "Buttons/ElementList.hpp"
+#include "Buttons/ElementWithList.hpp"

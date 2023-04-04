@@ -44,7 +44,7 @@ namespace rn
 					++const_iterator;
 					return *this;
 				}
-				ConstIterator &operator++(int) // postfix
+				ConstIterator operator++(int) // postfix
 				{
 					return ConstIterator(const_iterator++);
 				}
@@ -240,21 +240,21 @@ namespace rn
 				{
 					return --(*this);
 				}
-				Iterator &operator++()
+				Iterator &operator++() // prefix
 				{
 					++iterator;
 					return *this;
 				}
-				Iterator &operator++(int)
+				Iterator operator++(int) // postfix
 				{
 					return Iterator(iterator++);
 				}
-				Iterator &operator--()
+				Iterator &operator--() // prefix
 				{
 					--iterator;
 					return *this;
 				}
-				Iterator operator--(int)
+				Iterator operator--(int) // postfix
 				{
 					return Iterator(iterator--);
 				}
@@ -1181,5 +1181,6 @@ namespace rn
 					y++;
 			}
 		}
+
 	};
 }

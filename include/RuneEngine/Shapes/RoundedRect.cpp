@@ -77,10 +77,14 @@ namespace rn
 	void RoundedRect::draw(sf::RenderTarget& target, sf::RenderStates states) const
 	{
 		states.transform *= getTransform();
+		if (getOutlineThickness() != 0.f)
+		{
+			RoundedRect outline = { getSize() + Vec2f{getOutlineThickness() * 2, getOutlineThickness() * 2}, getRadius()};
+			outline.setFillColor(getOutlineColor());
+			outline.move(-getOutlineThickness(), -getOutlineThickness());
+			outline.draw(target, states);
+		}
 		Vec2u s = Vec2u(this->getSize());
-		sf::RenderTexture rt; // end texture
-		rt.create(s.x, s.y);
-		rt.clear({ 0, 0, 0, 0 });
 		sf::RenderTexture renderer; // rectangle draw's here
 		renderer.create(s.x, s.y);
 		renderer.clear({ 0, 0, 0, 0 });
@@ -90,8 +94,10 @@ namespace rn
 		shader.setUniform("uTexture", renderer.getTexture());
 		shader.setUniform("radius", radius);
 			
-		sf::Sprite end_spr;
-		end_spr.setTexture(rt.getTexture());
+		sf::RenderTexture rt; // end texture
+		rt.create(s.x, s.y);
+		rt.clear({ 0, 0, 0, 0 });
+		sf::Sprite end_spr(rt.getTexture());
 		rt.draw(spr, &shader);
 		target.draw(end_spr, states);
 	}

@@ -56,8 +56,11 @@ namespace rn
 			return l;
 		}
 
-		sf::FloatRect getShapeLocal() const { return shape.getLocalBounds(); }
-		sf::FloatRect getShapeGlobal() const { return shape.getGlobalBounds(); }
+		const Shape &getShape() const
+		{
+			return shape;
+		}
+
 		float getRatio(const Vec2f &position) const
 		{
 			using math::length, math::nearest, math::norm;

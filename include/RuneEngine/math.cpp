@@ -28,7 +28,14 @@ namespace rn
 
 		bool contains(const Rect &rect, const Vec2f &p)
 		{
-			return rect.getGlobalBounds().contains(p);
+			using namespace math_operations;
+			auto &position = rect.getPosition();
+			float alpha = rect.getRotation();
+			auto v = p - position;
+			auto r = length(v);
+			auto beta = rot(v);
+			auto u = position + r * Vec2f(cos((beta - alpha)*rad), sin((beta - alpha)*rad));
+			return sf::FloatRect{ position, rect.getSize() * rect.getScale()}.contains(u);
 		}
 
 		bool contains(const sf::FloatRect &rect, const Vec2f &p)
@@ -56,6 +63,18 @@ namespace rn
 			const float c = y1 * x2 - x1 * y2;
 			const Vec2f N = nearest(p, a, b, c);
 			return N;
+		}
+		bool contains(const sf::VertexArray &convex_polygon, const Vec2f &p)
+		{
+			bool ins = true;
+			Vec2f p1 = convex_polygon[0].position, p2;
+			for (int i = static_cast<int>(convex_polygon.getVertexCount()) - 1; i >= 0; i--)
+			{
+				p2 = convex_polygon[i].position;
+				ins = ins && (p1.y - p2.y) * p.x + (p2.x - p1.x) * p.y <= p1.y * p2.x - p1.x * p2.y;
+				p1 = p2;
+			}
+			return ins;
 		}
 		bool contains(const Convex &polygon, const Vec2f &p)
 		{ // only for convex
@@ -113,6 +132,22 @@ namespace rn
 			}
 			return p2;
 		}
+
+		float rot(const Vec2f &p)
+		{
+			const Vec2f d = norm(p);
+			const float alpha = acosf(d.x) / rad;
+			return d.y < 0.f ? 360.f - alpha : alpha;
+		}
+		float getAngle(const Vec2f &A, const Vec2f &B, const Vec2f &C) // angle of the ABC 
+		{
+			if (A == B and B == C) return 0;
+			const float a = length(C - B); // BC
+			const float b = length(C - A); // AC
+			const float c = length(B - A); // AB
+			const float alpha = around(acos((powf(a, 2) + powf(c, 2) - powf(b, 2)) / (2 * a * c)) / rad, 8);
+			return alpha;
+		}
 		float sgn(float x)
 		{
 			return x == 0.f ? 0.f : x / abs(x);
@@ -126,5 +161,9 @@ namespace rn
 			return { clamp(p.x, r.left, r.left + r.width), clamp(p.y, r.top, r.top + r.height) };
 		}
 		Vec2f norm(const Vec2f &v) { return v / length(v); }
+		Vec2f nor(const Vec2f &v)
+		{
+			return norm({ v.y, -v.x });
+		}
 	}
 }

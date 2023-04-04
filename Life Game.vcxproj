@@ -131,17 +131,33 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Button.cpp" />
+    <ClCompile Include="Cell.cpp" />
+    <ClCompile Include="CellField.cpp" />
     <ClCompile Include="Life Game.cpp" />
+    <ClCompile Include="MainMenu.cpp" />
+    <ClCompile Include="Options.cpp" />
+    <ClCompile Include="StartGame.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Button.hpp" />
     <ClInclude Include="Cell.hpp" />
     <ClInclude Include="CellField.hpp" />
     <ClInclude Include="LifeGame.hpp" />
+    <ClInclude Include="MainMenu.hpp" />
+    <ClInclude Include="Options.hpp" />
+    <ClInclude Include="StartGame.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\default_settings.json" />
+    <None Include="src\settings.json" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties src_4settings_1json__JsonSchema="https://ffizer.github.io/ffizer/ffizer.schema.json" />
+    </VisualStudio>
+  </ProjectExtensions>
 </Project>

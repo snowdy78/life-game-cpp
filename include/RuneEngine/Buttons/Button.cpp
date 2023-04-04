@@ -31,28 +31,46 @@ namespace rn
 		setPosition(button->getTextCenterPosition());
 	}
 
-	Button::Button(const Rect &rect, const sf::String &string, const sf::Font &font)
-		: content(sf::Text(string, font), this)
-	{
-		setSize(rect.getSize());
-		content.setPosition(getTextCenterPosition());
-	}
-	Button::Button(const Vec2f &size, const sf::String &string, const sf::Font &font)
+	Button::Button(Vec2f size, const sf::String &string, const sf::Font &font)
 		: content(sf::Text{ string, font }, this)
 	{
 		setSize(size);
+		content.setFillColor(sf::Color::Black);
 		content.setPosition(getTextCenterPosition());
 
 	}
+
+	Button::Button(const Button& button): Rect(button), content(sf::Text(button.content), this)
+	{
+			
+	}
+
+	Button::Button(Button&& button) noexcept: Rect(std::move(button)), content(sf::Text(std::move(button.content)), this)
+	{
+			
+	}
+
 	void Button::setPosition(const Vec2f &position)
 	{
 		Rect::setPosition(position);
 		content.setPosition(getTextCenterPosition());
 	}
+
+	void Button::setPosition(const float& x, const float& y)
+	{
+		setPosition(Vec2f(x, y));
+	}
+
 	void Button::setOrigin(const Vec2f &origin)
 	{
 		Rect::setOrigin(origin);
 		content.setOrigin(origin);
+		content.setPosition(getTextCenterPosition());
+	}
+
+	void Button::setOrigin(const float& x, const float& y)
+	{
+		setOrigin(Vec2f(x, y));
 		content.setPosition(getTextCenterPosition());
 	}
 
@@ -63,48 +81,61 @@ namespace rn
 		content.setScale(scale);
 		content.setPosition(getTextCenterPosition());
 	}
-	void Button::setString(const sf::String &str)
+
+	void Button::setScale(const float& x, const float& y)
 	{
-		content.setString(str);
-		content.setPosition(getTextCenterPosition());
+		setScale(Vec2f(x, y));
 	}
 
-	void Button::setIndents(const float &left, const float &top)
+	
+	void Button::setSize(float x, float y)
 	{
-		indents = Vec2f(left, top);
-		content.setOrigin(indents);
-	}
-
-	void Button::setIndents(const Vec2f &indents)
-	{
-		this->indents = Vec2f(indents);
-		content.setOrigin(indents);
+		Button::setSize(Vec2f(x, y));
 	}
 
 	void Button::setSize(const Vec2f &size)
 	{
 		Rect::setSize(size);
-		content.setCharacterSize(static_cast<unsigned>(abs(round(getSize().y / 2.f))));
+		content.setCharacterSize(static_cast<unsigned>(abs(std::round(getSize().y / 2.f))));
 		content.setPosition(getTextCenterPosition());
-	}
-
-	sf::Vector2f Button::getIndents() const
-	{
-		return indents;
 	}
 
 	Vec2f Button::getTextCenterPosition() const
 	{
-		float w = (getGlobalBounds().width - content.getGlobalBounds().width) / 2.f;
-		float h = (getGlobalBounds().height - content.getGlobalBounds().height) / 2.f;
-		Vec2f p = Vec2f(content.getGlobalBounds().left, content.getGlobalBounds().top) - content.getPosition();
+		sf::FloatRect cgb = content.getGlobalBounds();
+		sf::FloatRect gb = getGlobalBounds();
+		float w = (gb.width - cgb.width) / 2.f;
+		float h = (gb.height - cgb.height) / 2.f;
+		Vec2f p = Vec2f(cgb.left, cgb.top) - content.getPosition();
 		Vec2f defaultIndent = Vec2f(w, h);
 		return getPosition() - getOrigin() + defaultIndent - p;
 	}
 
 	bool Button::isIntersected(const Vec2f& p) const
 	{
-		return math::contains(Rect(*this), p);
+		return math::contains(getGlobalBounds(), p);
+	}
+
+	Button& Button::operator=(const Button& button)
+	{
+		if (this != &button)
+		{
+			static_cast<Rect &>(*this) = static_cast<const Rect &>(button);
+			static_cast<sf::Text &>(content) = static_cast<const sf::Text &>(button.content);
+			content.button = this;
+		}
+		return *this;
+	}
+
+	Button& Button::operator=(Button&& button) noexcept
+	{
+		if (this != &button)
+		{
+			static_cast<Rect &>(*this) = static_cast<const Rect &>(button);
+			static_cast<sf::Text &>(content) = static_cast<const sf::Text &>(button.content);
+			content.button = this;
+		}
+		return *this;
 	}
 
 	void Button::draw(sf::RenderTarget &window, sf::RenderStates states) const

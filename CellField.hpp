@@ -6,195 +6,90 @@
 
 namespace lg
 {
-	class CellField : public sf::Drawable
+	class CellField : public sf::Drawable, public sf::Transformable, public rn::MonoBehaviour
 	{
+	public:
+		using Iterator = std::vector<Cell>::iterator;
+		using ConstIterator = std::vector<Cell>::const_iterator;
+	private:
 		int x, y;
-		std::vector<Cell> cells;
+		using ms = std::chrono::milliseconds;
 		bool is_started = false;
 		std::vector<Cell *> next_frame_live_cells;
 		std::vector<Cell *> next_frame_dead_cells;
 		rn::StopWatch stopwatch;
-	public:
-		using Iterator = std::vector<Cell>::iterator;
-		using ConstIterator = std::vector<Cell>::const_iterator;
-		CellField(int x, int y)
-			: x(x), y(y), cells(static_cast<size_t>(x*y), Cell(this))
-		{
-			resize_cells();
-		}
-		sf::Vector2i orientation() const
-		{
-			return { x, y };
-		}
-		ConstIterator begin() const
-		{
-			return cells.begin();
-		}
-		ConstIterator end() const
-		{
-			return cells.end();
-		}
-		ConstIterator cbegin() const
-		{
-			return cells.cbegin();
-		}
-		ConstIterator cend() const
-		{
-			return cells.cend();
-		}
+		Cell *choosed = nullptr;
+		inline static Vec2f default_size = Vec2f{rn::Settings::getResolution()};
+		inline static ms default_speed = ms(500);
+		ms speed = default_speed;
+		Vec2f size = default_size;
+		sf::Color live_color = sf::Color::White,
+				  death_color= sf::Color::Black;
+
+		std::vector<int> neighbour_values_when_cell_is_alive = {3};
+		std::vector<int> neighbour_values_when_cell_is_still_living = {2, 3};
+
+		std::vector<Cell> cells;
+
+		void kill(Cell &cell);
+		void alive(Cell &cell);
+		void recount_neighbours_around_cell(Iterator cell);
 		// neighbour is living cell
-		int get_neighbour_count(ConstIterator iter)
-		{
-			int nc = 0; // neighbour count
-			size_t p = std::distance(begin(), iter);
-			size_t px = p % x;
-			size_t py = (p - px)/x;
-			// left
-			if (px > 0) 
-				if ((iter - 1)->isLiving())
-					nc++;
-			// right
-			if (px < static_cast<size_t>(x) - 1) 
-				if ((iter + 1)->isLiving())
-					nc++;
-			
-			if (py > 0)
-			{
-				auto v = iter - x;
-				if (v->isLiving())
-					nc++;
-				size_t vp = std::distance(begin(), v);
-				size_t vx = vp % x; 
-				if (vx > 0) // left top
-					if ((v - 1)->isLiving())
-						nc++;
-				if (vx < static_cast<size_t>(x) - 1) // right top
-					if ((v + 1)->isLiving())
-						nc++;
-			}
-			if (py < static_cast<size_t>(y) - 1)
-			{
-				auto v = iter + x;
-				if (v->isLiving())
-					nc++;
-				size_t vp = std::distance(begin(), v);
-				size_t vx = vp % x;
-				if (vx > 0) // left bottom
-					if ((v - 1)->isLiving()) 
-						nc++;
-				if (vx < static_cast<size_t>(x) - 1) // right bottom
-					if ((v + 1)->isLiving())
-						nc++;
-			}
-			return nc;
-		}
-		bool wasStarted() const
-		{
-			return is_started;
-		}
-		void start()
-		{
-			is_started = true;
-		}
-		void stop()
-		{
-			is_started = false;
-		}
-		void aliveCell(ConstIterator cell)
-		{
-			if (!is_started)
-			{
-				auto icell = std::find(cells.begin(), cells.end(), *cell);
-				icell->alive();
-			}
-			else throw std::exception("cell can't be alive");
-		}
-		void slayCell(ConstIterator cell)
-		{
-			if (!is_started)
-			{
-				auto icell = std::find(cells.begin(), cells.end(), *cell);
-				icell->kill();
-			}
-			else throw std::exception("cell can't be slain");
-		}
-		void clear()
-		{
-			for (auto &cell : cells)
-			{
-				cell.kill();
-			}
-		}
-		void update()
-		{
-			if (is_started)
-			{
-				auto &nflc = next_frame_live_cells;
-				auto &nfdc = next_frame_dead_cells;
-				stopwatch.start();
-				using namespace std::chrono;
-				if (stopwatch.time<milliseconds>() >= 500ms)
-				{
-					stopwatch.reset();
-					for (auto &i : nflc)
-					{
-						i->alive();
-					}
-					nflc.clear();
-					for (auto &i : nfdc)
-					{
-						i->kill();
-					}
-					nfdc.clear();
-					for (auto cell = cells.begin(); cell != cells.end(); cell++)
-					{
-						//////
-						
-						auto neighbour_count = get_neighbour_count(cell);
-						if (neighbour_count == 3 and !cell->isLiving())
-						{
-							nflc.push_back(&*cell);
-						}
-						else if (!(neighbour_count == 2 or neighbour_count == 3) and cell->isLiving())
-						{
-							nfdc.push_back(&*cell);
-						}
+		int get_neighbour_count(ConstIterator iter);
+		std::vector<Cell *> get_cells_around(ConstIterator cell);
+		friend class Cell;
+	public:
+		CellField(int x, int y);
+		Vec2f getSize() const;
 
-						//////
-						
-					}
-				}
-				stopwatch.stop();
-			}
-		}
-		void draw(sf::RenderTarget& target, sf::RenderStates states) const override
-		{
-			for (auto &cell : cells)
-			{
-				target.draw(cell, states);
-			}
-		}
-		void resize_cells()
-		{
-			float resx = static_cast<float>(rn::Settings::getResolution().x);
-			float resy = static_cast<float>(rn::Settings::getResolution().y);
-			float countx = static_cast<float>(x), county = static_cast<float>(y);
-			int i = 0, j = 0;
+		void setRules(const std::initializer_list<int> &neighbour_values_when_cell_is_alive, const std::initializer_list<int> &neighbour_values_when_cell_is_still_living);
 
-			for (auto &cell : cells)
-			{
-				float x0 = static_cast<float>(i), y0 = static_cast<float>(j);
+		void setSize(const Vec2f &Size);
 
-				cell.setSize(sf::Vector2f(resx / countx, resy / county));
-				cell.setPosition(x0 * cell.getSize().x, y0 * cell.getSize().y);
-				i++;
-				if (i == x)
-				{
-					i = 0;
-					j++;
-				}
-			}
-		}
+		void setPosition(const Vec2f &position);
+
+		void setPosition(float x, float y);
+
+		void setOrigin(const Vec2f &origin);
+
+		void setOrigin(float x, float y);
+
+		void setDeathColor(const sf::Color &color);
+
+		void setLiveColor(const sf::Color &color);
+
+		ms getSpeed() const;
+
+		void setSpeed(const ms &speed);
+
+		sf::Vector2i orientation() const;
+
+		
+		sf::Color getCellsDeathColor() const;
+
+		sf::Color getCellsLiveColor() const;
+		ConstIterator begin() const;
+		ConstIterator end() const;
+		ConstIterator cbegin() const;
+		ConstIterator cend() const;
+
+
+		void onEvent(sf::Event& event) override;
+
+
+		bool wasStarted() const;
+
+		void play();
+
+		void stop();
+
+		void clear();
+		virtual void onStop() {  }
+		virtual void onPlay() {  }
+		void update() override;
+
+		void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 	private:
+		void resize_cells();
 	};
 }

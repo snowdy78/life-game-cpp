@@ -27,13 +27,26 @@ namespace rn
 		return isIntersected(where) and Clickable::isKeydown(eventtype);
 	}
 
+	bool ClickableObject::isClicked(sf::Event::EventType eventtype, const Vec2f &where) const
+	{
+		if (isKeydown(eventtype, where))
+		{
+			ready_to_click = true;
+		}
+		else if (Clickable::isKeyup(eventtype) and ready_to_click)
+		{
+			ready_to_click = false;
+			return isIntersected(where);
+		}
+		return false;
+	}
+
 	bool ClickableObject::isPushed(sf::Event::EventType eventtype, const Vec2f &where) const
 	{
-		auto &v = is_pushed;
 		if (isKeydown(eventtype, where))
-			v = true;
+			is_pushed = true;
 		if (Clickable::isKeyup(eventtype))
-			v = false;
-		return v;
+			is_pushed = false;
+		return is_pushed;
 	}
 }

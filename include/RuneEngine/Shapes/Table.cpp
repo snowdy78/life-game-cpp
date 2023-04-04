@@ -10,6 +10,34 @@ namespace rn
 	Table::Table(const size_t& width, const size_t& height): Matrix<sf::FloatRect>(width, height, sf::FloatRect())
 	{}
 
+	Table::ConstCell Table::getCell(const size_t& column, const size_t& row) const
+	{
+
+		return ConstCell(this, column, row);
+	}
+
+	Table::ConstCell Table::getCell(ConstRow row, ConstRow::ConstIterator cell) const
+	{
+		size_t py = 0, px = 0;
+		for (auto y = begin_row(); y == row; y++, py++)
+		{
+			px = 0;
+			for (auto x = y.begin(); x == cell; x++, px++);
+		}
+		return ConstCell(this, px, py);
+	}
+
+	Table::ConstCell Table::getCell(ConstColumn column, ConstColumn::ConstIterator cell) const
+	{
+		size_t py = 0, px = 0;
+		for (auto x = begin_column(); x == column; x++, px++)
+		{
+			py = 0;
+			for (auto y = x.begin(); y == cell; y++, py++);
+		}
+		return ConstCell(this, px, py);
+	}
+
 	Table::ConstRow Table::begin_row() const
 	{
 		return Matrix::begin_row();
@@ -151,6 +179,11 @@ namespace rn
 		}
 	}
 
+	void Table::setBorderColor(sf::Color color)
+	{
+		this->color = color;
+	}
+
 	Vec2f Table::getSize() const
 	{
 		Vec2f ss; // size
@@ -192,12 +225,13 @@ namespace rn
 
 	sf::FloatRect Table::getGlobalBounds() const
 	{
-		return {getPosition(), getSize()};
+		using namespace math_operations;
+		return {getPosition() - getOrigin(), getSize()*getScale()};
 	}
 
 	sf::FloatRect Table::getLocalBounds() const
 	{
-		return {Vec2f(), getSize()};
+		return {getOrigin(), getSize()};
 	}
 
 	void Table::recount_cells_positions()
@@ -234,6 +268,8 @@ namespace rn
 				{
 					borders[0].position = Vec2f{ cell->left, cell->top };
 					borders[1].position = borders[0].position + Vec2f{ cell->width, 0 };
+					borders[0].color = color;
+					borders[1].color = color;
 					target.draw(borders, states);
 					borders[1].position = borders[0].position + Vec2f{ 0, cell->height };
 					target.draw(borders, states);

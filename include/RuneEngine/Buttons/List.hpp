@@ -5,7 +5,7 @@
 // vertical scroll class specialization
 namespace rn
 {
-	class List : Table
+	class List : public Table
 	{
 		std::vector<const sf::FloatRect *> rect_list;
 		void update_rect_list();
@@ -14,19 +14,19 @@ namespace rn
 		{
 			Rect shape;
 			Table *base = nullptr;
-			Vec2f default_position;
+			Vec2f absolute_position; // origin of the base
 			Vec2f size;
 			Vec2f bounds;
 			float l = 0.f;
 
-			// Size - full size of Object
+			// Size - full size of Base
 			// Bounds - limit of slider
 			explicit ScrollBar(float length, Table *Base, float bound_height);
+			ScrollBar() = default;
 
 			void setLength(float length);
-
+			void reTransform();
 		public:
-			ScrollBar() = default;
 
 			void scroll(float k);
 
@@ -46,12 +46,17 @@ namespace rn
 
 			void move(const Vec2f &offset);
 
-			const Vec2f &getScrollPosition() const;
+			void setFillColor(const sf::Color &);
+			void setOutlineColor(const sf::Color &);
+			void setOutlineThickness(const float &);
+			sf::Color getFillColor() const;
+			sf::Color getOutlineColor() const;
+			float getOutlineThickness() const;
 
-			sf::FloatRect getScrollGlobalBounds() const;
-
-			sf::FloatRect getScrollLocalBounds() const;
-
+			void setTexture(const sf::Texture *texture, bool reset_rect = false);
+			void setTextureRect(const sf::IntRect &rect);
+			const sf::Texture *getTexture() const;
+			const sf::IntRect &getTextureRect() const;
 			const Vec2f &getSize() const;
 
 			float getRatio(const Vec2f &position) const;
@@ -64,9 +69,14 @@ namespace rn
 
 			sf::FloatRect getLocalBounds() const;
 
-			void setTablePosition(const Vec2f &position);
+			void setAbsolute(const Vec2f &position);
+			void setAbsolute(float x, float y);
 
-			void setTablePosition(float x, float y);
+			const Vec2f &getAbsolute() const;
+
+			const sf::Transform &getTransform() const;
+
+			const sf::Transform &getInverseTransform() const;
 
 		private:
 			void setTable(Table *table);
@@ -80,28 +90,9 @@ namespace rn
 			void draw(sf::RenderTarget &target, sf::RenderStates states) const override;
 			friend class List;
 		};
-		List::ScrollBar scrollbar;
 		class ConstIterator;
-		using Table::getPosition;
-		using Table::getOrigin;
-		using Table::getScale;
-		using Table::getRotation;
-		using Table::getTransform;
-		using Table::getInverseTransform;
-		using Table::setPosition;
-		using Table::setOrigin;
-		using Table::setScale;
-		using Table::setRotation;
-		using Table::getSize;
-		using Table::getColumnCount;
-		using Table::getColumnRect;
-		using Table::getRowRect;
-		using Table::getRowCount;
-		using Table::getCellCount;
-		using Table::getCellSize;
-		using Table::getCellPosition;
-		using Table::getCellRect;
-		
+		List::ScrollBar scrollbar;
+
 		List(Table &&Table_, float slider_length, float bound_length_y);
 		List(const List &list);
 		List(List &&list) noexcept;
@@ -112,9 +103,15 @@ namespace rn
 		ConstIterator end() const;
 		ConstIterator cend() const;
 
-		sf::FloatRect at(const size_t &x, const size_t &y) const;
-
+		void setAbsolute(const Vec2f &position);
+		void setAbsolute(float x, float y);
+		const Vec2f &getAbsolute() const;
+		void setCellsSize(const Vec2f &sample);
 		void resize(const size_t &width, const size_t &height);
+		void setColumnWidth(const size_t &x, float width);
+		void setRowHeight(const size_t &y, float height);
+
+		sf::FloatRect at(const size_t &x, const size_t &y) const;
 
 		sf::FloatRect getGlobalBounds() const;
 		sf::FloatRect getLocalBounds() const;
@@ -123,7 +120,6 @@ namespace rn
 		List &operator=(List &&list) noexcept;
 
 	private:
-		
 		void draw(sf::RenderTarget &target, sf::RenderStates states) const override;
 	public:
 		class ConstIterator

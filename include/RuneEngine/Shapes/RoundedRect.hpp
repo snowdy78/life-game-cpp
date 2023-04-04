@@ -16,13 +16,13 @@ namespace rn
 		void setRadius(float radius);
 		float getRadius() const;
 		void round(float radius);
-		void draw(sf::RenderTarget &target, sf::RenderStates states) const override;
 		RoundedRect &operator=(const RoundedRect &rect);
 		RoundedRect &operator=(RoundedRect &&rect) noexcept;
 	private:
 		mutable sf::Shader shader;
 		float radius = 1.f; // round degree
 		inline static const std::string file = load_shader_file();
+		void draw(sf::RenderTarget &target, sf::RenderStates states) const override;
 	};
 
 	
