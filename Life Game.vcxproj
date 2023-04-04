@@ -149,11 +149,18 @@
     <ClInclude Include="LifeGame.hpp" />
     <ClInclude Include="MainMenu.hpp" />
     <ClInclude Include="Options.hpp" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="StartGame.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\default_settings.json" />
     <None Include="src\settings.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Life Game.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="icon.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
