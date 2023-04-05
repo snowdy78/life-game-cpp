@@ -2,6 +2,9 @@
 
 #include <vector>
 #include <iterator>
+
+#include "Cell.hpp"
+#include "Cell.hpp"
 #include "Cell.hpp"
 
 namespace lg
@@ -57,6 +60,9 @@ namespace lg
 		void setDeathColor(const sf::Color &color);
 
 		void setLiveColor(const sf::Color &color);
+
+		void diplayCellNeighbourCount(bool show);
+		bool isCellNeighbourCountDisplays() const;
 
 		ms getSpeed() const;
 

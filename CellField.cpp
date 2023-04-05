@@ -82,6 +82,19 @@ namespace lg
 		}
 	}
 
+	void CellField::diplayCellNeighbourCount(bool show)
+	{
+		for (auto &cell : cells)
+		{
+			cell.displayNeighbourCount(show);
+		}
+	}
+
+	bool CellField::isCellNeighbourCountDisplays() const
+	{
+		return begin()->isDisplayNeighbourCount();
+	}
+
 	CellField::ms CellField::getSpeed() const
 	{
 		return speed;
@@ -148,6 +161,8 @@ namespace lg
 	{
 		return cells.cend();
 	}
+
+
 
 	void CellField::onEvent(sf::Event &event)
 	{

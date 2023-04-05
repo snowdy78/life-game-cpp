@@ -30,7 +30,7 @@ namespace rn
 		sf::Text::setCharacterSize(char_size);
 		setPosition(button->getTextCenterPosition());
 	}
-
+	
 	Button::Button(Vec2f size, const sf::String &string, const sf::Font &font)
 		: content(sf::Text{ string, font }, this)
 	{

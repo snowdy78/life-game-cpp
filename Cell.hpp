@@ -27,18 +27,26 @@ namespace lg
 		size_t index = 0; // position on the field
 		bool is_living = false;
 		using RectangleShape::setFillColor;
-		void update_neighbour_count(size_t count);
+		bool is_show = true;
 		friend class CellField;
-	public:
 		Cell(CellField &cell_field, bool liveness = false);
-		bool isLiving() const;
-
 		void setNeighbourCount(int count);
-
-		int getNeighbourCount() const;
 		void kill();
 		void alive();
-
+	public:
+		bool isLiving() const;
+		void displayNeighbourCount(bool is_show);
+		bool isDisplayNeighbourCount() const
+		{
+			return is_show;
+		}
+		int getNeighbourCount() const;
+		void draw(sf::RenderTarget& target, sf::RenderStates states) const override
+		{
+			target.draw(rn::Rect(*this), states);
+			if (is_show)
+				target.draw(content, states);
+		}
 		bool operator==(const Cell &cell) const;
 
 		bool operator!=(const Cell &cell) const;

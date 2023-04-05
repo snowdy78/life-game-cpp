@@ -4,9 +4,16 @@ namespace rn
 	struct Button : Rect, ClickableObject
 	{
 	private:
-		class Text : sf::Text
+		class Text : public sf::Text
 		{
 			const Button *button;
+			using sf::Text::setPosition;
+			using sf::Text::setOrigin;
+			using sf::Text::setScale;
+			using sf::Text::setRotation;
+			using sf::Text::move;
+			using sf::Text::scale;
+			using sf::Text::rotate;
 		public:
 			explicit Text(sf::Text &&text, const Button *button_ref)
 				: sf::Text(std::move(text)), button(button_ref)
@@ -18,31 +25,12 @@ namespace rn
 			Text(Text &&text) noexcept = delete;
 
 			Text() = default;
-			using sf::Text::getPosition;
-			using sf::Text::getOrigin;
-			using sf::Text::getScale;
-			using sf::Text::getRotation;
-			using sf::Text::getGlobalBounds;
-			using sf::Text::getLocalBounds;
-			using sf::Text::setFillColor;
-			using sf::Text::getFillColor;
-			using sf::Text::findCharacterPos;
-			using sf::Text::getCharacterSize;
-			using sf::Text::getLetterSpacing;
-			using sf::Text::getString;
-			using sf::Text::setOutlineColor;
-			using sf::Text::getOutlineColor;
-			using sf::Text::setOutlineThickness;
-			using sf::Text::getOutlineThickness;
-			using sf::Text::setColor;
-			using sf::Text::getColor;
 			void setLineSpacing(float spacingFactor);
 			void setStyle(sf::Uint32 style);
 			void setString(sf::String string);
 			void setFont(const sf::Font &font);
 			void setCharacterSize(unsigned char_size);
 			using sf::Text::getTransform;
-
 			Text &operator=(const Text &text) = delete;
 			Text &operator=(Text &&text) noexcept = delete;
 			friend struct Button;

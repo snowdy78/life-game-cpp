@@ -14,13 +14,14 @@ namespace lg
 				vbuttons[y]->setPosition(vertical_buttons.getCellPosition(x, y));
 			}
 		}
+		show_neighbour_count.content.setCharacterSize(15);
 		vertical_buttons.setBorderColor(button_text_color);
 		cell_field.setDeathColor(button_color);
 		cell_field.setLiveColor(button_text_color);
 		cell_field.setSize(res - Button::getSize());
 		using namespace std::chrono_literals;
 		cell_field.setSpeed(100ms);
-		cell_field.setRules({ 3 }, { 4, 3 });
+		cell_field.setRules({ 4 }, { 1, 3, 4 });
 		cell_field.setPosition(Button::getSize());
 		clear.setPosition(0, clear.getSize().y);
 	}
@@ -29,8 +30,10 @@ namespace lg
 		window.clear(background_color);
 		cell_field.update();
 		window.draw(cell_field);
-		window.draw(clear);
-		window.draw(play);
+		for (auto &button : buttons)
+		{
+			window.draw(*button);
+		}
 		window.draw(vertical_buttons);
 		window.display();
 	}
@@ -68,7 +71,12 @@ namespace lg
 				cell_field.stop();
 				return;
 			}
+			if (show_neighbour_count.isClicked(event.type, mpos))
+			{
+				cell_field.diplayCellNeighbourCount(!cell_field.isCellNeighbourCountDisplays());
+			}
 		}
+
 		cell_field.onEvent(event);
 	}
 }

@@ -2,10 +2,6 @@
 
 namespace lg
 {
-	void Cell::update_neighbour_count(size_t count)
-	{
-		content.setString(sf::String(std::to_string(count)));
-	}
 
 	Cell::Cell(CellField &cell_field, bool liveness)
 		: field(&cell_field)
@@ -22,6 +18,11 @@ namespace lg
 	bool Cell::isLiving() const
 	{
 		return is_living;
+	}
+
+	void Cell::displayNeighbourCount(bool is_show)
+	{
+		this->is_show = is_show;
 	}
 
 	void Cell::setNeighbourCount(int count)
@@ -64,7 +65,6 @@ namespace lg
 			}
 		}
 	}
-
 	bool Cell::operator==(const Cell& cell) const
 	{
 		return this == &cell;
